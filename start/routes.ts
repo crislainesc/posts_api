@@ -19,5 +19,28 @@
 */
 
 import Route from '@ioc:Adonis/Core/Route'
+import 'App/Modules/Post/routes'
+import 'App/Modules/User/routes'
 
-Route.resource('posts', 'PostsController').apiOnly()
+import Post from 'App/Models/Post'
+
+
+Route.route('/', ['OPTIONS', 'HEAD'], async ({ request, response }) => {
+  if (request.method() === 'HEAD') {
+    const title = request.header('title')
+
+    const post = await Post.findByOrFail('title', title)
+
+    return post ? response.ok('Post exists') : response.notFound('Post does not exists')
+  }
+
+  if (request.method() === 'OPTIONS') {
+    return response.ok('Options, Head route')
+  }
+}).prefix('v1')
+
+Route.any('/*', async ({ response }) => {
+  return response.status(400)
+}).prefix('v1')
+
+Route.post('login', 'AuthController.login').prefix('v1')
