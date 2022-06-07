@@ -5,7 +5,7 @@ export default class PostsController {
     public async index({response}) {
         const posts = await Post.all()
 
-        return response.ok(posts)
+        return response.ok(posts.reverse())
     }
 
     public async store({request, response}) {
@@ -19,9 +19,16 @@ export default class PostsController {
         })
 
         const payload: any = await request.validate({schema: postSchema})
+
+        const existsPost = await Post.findBy('title', payload.title)
+
+        if(existsPost) {
+            return response.conflict({message: 'Post already exists'})
+        }
+
         const post: Post = await Post.create(payload)
 
-        return response.ok(post)
+        return response.created(post)
     }
 
     public async show({params, response}) {
@@ -75,6 +82,6 @@ export default class PostsController {
 
         await post.delete()
 
-        return response.ok({message: 'Post deleted successfully'})
+        return response.status(204)
     }
 }
