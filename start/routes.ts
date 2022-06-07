@@ -24,23 +24,20 @@ import 'App/Modules/User/routes'
 
 import Post from 'App/Models/Post'
 
+Route.post('login', 'AuthController.login').prefix('v1')
 
-Route.route('/', ['OPTIONS', 'HEAD'], async ({ request, response }) => {
-  if (request.method() === 'HEAD') {
-    const title = request.header('title')
+Route.route('/head', ['HEAD'], async ({ request, response }) => {
+  const title = request.header('title')
 
-    const post = await Post.findByOrFail('title', title)
+  const post = await Post.findByOrFail('title', title)
 
-    return post ? response.ok('Post exists') : response.notFound('Post does not exists')
-  }
+  return post ? response.ok('Post exists') : response.notFound('Post does not exists')
+}).prefix('v1')
 
-  if (request.method() === 'OPTIONS') {
-    return response.ok('Options, Head route')
-  }
+Route.route('/options', ['OPTIONS'], async ({ response }) => {
+  return response.header('Allow', 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD')
 }).prefix('v1')
 
 Route.any('/*', async ({ response }) => {
   return response.status(400)
 }).prefix('v1')
-
-Route.post('login', 'AuthController.login').prefix('v1')
